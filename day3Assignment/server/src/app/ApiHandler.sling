@@ -1,0 +1,63 @@
+import jk.http.client
+import jk.http.worker
+
+class is HTTPRPCRouter #webapi2:
+
+model RequestModel
+{
+    id as string
+    name as string
+    description as string
+}
+
+var db as Database
+var cors = Config.getCorsUtil()
+
+func getDatabase as Database
+{
+    if not db {
+        db = Database.forContext(getCtx())
+        db.updateTables()
+    }
+    return db
+}
+
+func postProcess(req as HTTPWorkerRequest, resp as HTTPWorkerResponse) override:
+    cors.handleWorkerRequest(req, resp)
+
+GET "/tasks"
+{
+    var tasks = assert getDatabase().getValues()
+    sendOk tasks
+}
+
+POST "/task"
+{
+    var requestData = assert RequestModel.forJsonString(req.getBodyString()):
+        sendError "invalidRequest"
+    var task = new Database.Table()
+    task.setName(requestData.getName())
+    task.setDescription(requestData.getDescription())
+    assert getDatabase().addValue(task):
+        sendError "failedToSaveEntry"
+    sendOk
+}
+
+PUT "/task/:id"
+{
+    var requestData = assert RequestModel.forJsonString(req.getBodyString()):
+        sendError "invalidRequest"
+    var task = new Database.Table()
+    task.setName(requestData.getName())
+    task.setDescription(requestData.getDescription())
+    assert getDatabase().updateValue(vars.getString("id"), task):
+        sendError "failedToUpdateEntry"
+    sendOk
+}
+
+DELETE "/task/:id"
+{
+    assert getDatabase().deleteValue(vars.getString("id")):
+        sendError "failedToDeleteEntry"
+    sendOk
+}
