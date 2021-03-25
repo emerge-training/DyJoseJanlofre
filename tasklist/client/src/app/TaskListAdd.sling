@@ -11,7 +11,7 @@ model TaskModel
 
 ui LayerWidget
 {
-    VerticalScrollerWidget{
+    HorizontalScrollerWidget{
         scrollBarDisabled = true
         LayerWithBackgroundColorWidget container{
             color = Color.white()
@@ -26,26 +26,15 @@ ui LayerWidget
 func initializeWidget override
 {
     base.initializeWidget()
-    var formdec = FormDeclaration.forDescription(context,"text")
-    formdec.addElement(FormDeclaration.addTextInput("id","label","desc"))
+    list.addWidget(TextInputWidget.forType(context,1,"Name "))
+    list.addWidget(TextInputWidget.forType(context,1,"Description"))
+    list.addWidget(TextButtonWidget.forText(context,"Add Task"))
 
-    list.addWidget(FormWidget.forDeclaration(context, formdec))
-    APIClient.getInstance().getTasks(func(response as DynamicMap){
-        var data = assert response.getDynamicMap("data")
-        var records = data.getDynamicVector("records")
-        if not records || records.getSize() < 1{
-            list.addWidget(AlignWidget.forWidget(context, LabelWidget.forText(context, "No Record")), 1.0)
-        }
-        else {
-            foreach record as DynamicMap in records.toVector() {
-                var task = record.getString("name") .. " - " .. record.getString("description")
-                var lblTask = LabelWidget.forText(context, task)
-                var hbox = HorizontalBoxWidget.forContext(context, 0, context.getHeightValue("0.5mm"))
-                hbox.addWidget(lblTask)
-                list.addWidget(AlignWidget.forWidget(context, hbox), 1.0)
-            }
-        }
-    })
+}
+
+func addTask
+{
+
 }
 
 func getWidgetTitle as string:
