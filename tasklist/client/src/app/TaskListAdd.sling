@@ -18,6 +18,9 @@ ui LayerWidget
             VerticalBoxWidget list{
                 margin = context.getHeightValue("5mm")
                 spacing = context.getHeightValue("5mm")
+                TextInputWidget{
+                    placeholder = "ASDASDASD"
+                }
             }
         }
     }
@@ -26,14 +29,21 @@ ui LayerWidget
 func initializeWidget override
 {
     base.initializeWidget()
-    list.addWidget(TextInputWidget.forType(context,1,"Name "))
-    list.addWidget(TextInputWidget.forType(context,1,"Description"))
-    list.addWidget(TextButtonWidget.forText(context,"Add Task"))
-
-}
-
-func addTask
-{
+    var name = TextInputWidget.forType(context,TextInputWidget.TYPE_DEFAULT,"Name ")
+    var desc = TextInputWidget.forType(context,TextInputWidget.TYPE_DEFAULT,"Description")
+    list.addWidget(name)
+    list.addWidget(desc)
+    list.addWidget(TextButtonWidget.forText(context,"Add Task", func{
+        var task = new TaskModel()
+        task.setName(name.getWidgetText())
+        task.setDescription(desc.getWidgetText())
+        APIClient.getInstance().addTask(task.toDynamicMap(), func(res as DynamicMap){
+            list.addWidget(AlignWidget.forWidget(context, LabelWidget.forText(context, "Added Task")), 1.0)
+        }, func(err as Error){
+            list.addWidget(AlignWidget.forWidget(context, LabelWidget.forText(context, "Failed To Add Task")), 1.0)
+        })
+    }) )
+    name.focus()
 
 }
 
