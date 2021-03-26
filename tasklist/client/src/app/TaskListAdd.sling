@@ -41,6 +41,20 @@ ui LayerWidget
                             })
                         }
                     }
+                    TextButtonWidget addTaskButton{
+                        text = "Add Task"
+                        clickHandler = func{
+                            var task = new TaskModel()
+                            task.setId(idInput.getWidgetText())
+                            task.setName(nameInput.getWidgetText())
+                            task.setDescription(descInput.getWidgetText())
+                            APIClient.getInstance().addTask(task.toDynamicMap(), func(res as DynamicMap){
+                                submitMessage.setWidgetText("Successfully Added Task")
+                            }, func(err as Error){
+                                submitMessage.setWidgetText("Failed to save task")
+                            })
+                        }
+                    }
                     
                     AlignWidget{
                         margin = 1.0
