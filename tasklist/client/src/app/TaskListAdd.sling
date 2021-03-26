@@ -5,46 +5,57 @@ class is TitledWidget #widget:
 
 model TaskModel
 {
+    id as string
     name as string
     description as string
 }
 
 ui LayerWidget
 {
-    HorizontalScrollerWidget{
-        scrollBarDisabled = true
+    VerticalScrollerWidget{
+        scrollBarDisabled = false
         LayerWithBackgroundColorWidget container{
             color = Color.white()
-            VerticalBoxWidget list{
-                margin = context.getHeightValue("5mm")
-                spacing = context.getHeightValue("5mm")
-                TextInputWidget{
-                    placeholder = "ASDASDASD"
+            HorizontalBoxWidget{
+                VerticalBoxWidget form{
+                    TextInputWidget idInput{
+                        placeholder = "ID"
+                    }
+                    TextInputWidget nameInput{
+                        placeholder = "Name"
+                    }
+                    TextInputWidget descInput{
+                        placeholder = "Description"
+                    }
+                    TextButtonWidget addTaskButton{
+                        text = "Add Task"
+                        clickHandler = func{
+                            var task = new TaskModel()
+                            task.setId(idInput.getWidgetText())
+                            task.setName(nameInput.getWidgetText())
+                            task.setDescription(descInput.getWidgetText())
+                            APIClient.getInstance().addTask(task.toDynamicMap(), func(res as DynamicMap){
+                                submitMessage.setWidgetText("Successfully Added Task")
+                            }, func(err as Error){
+                                submitMessage.setWidgetText("Failed to save task")
+                            })
+                        }
+                    }
+                    AlignWidget{
+                        margin = 1.0
+                    
+                        LabelWidget submitMessage{
+                            text = "test"
+                        }
+                    }
+                }
+                VerticalBoxWidget list{
+                    margin = context.getHeightValue("5mm")
+                    spacing = context.getHeightValue("5mm")
                 }
             }
         }
     }
-}
-
-func initializeWidget override
-{
-    base.initializeWidget()
-    var name = TextInputWidget.forType(context,TextInputWidget.TYPE_DEFAULT,"Name ")
-    var desc = TextInputWidget.forType(context,TextInputWidget.TYPE_DEFAULT,"Description")
-    list.addWidget(name)
-    list.addWidget(desc)
-    list.addWidget(TextButtonWidget.forText(context,"Add Task", func{
-        var task = new TaskModel()
-        task.setName(name.getWidgetText())
-        task.setDescription(desc.getWidgetText())
-        APIClient.getInstance().addTask(task.toDynamicMap(), func(res as DynamicMap){
-            list.addWidget(AlignWidget.forWidget(context, LabelWidget.forText(context, "Added Task")), 1.0)
-        }, func(err as Error){
-            list.addWidget(AlignWidget.forWidget(context, LabelWidget.forText(context, "Failed To Add Task")), 1.0)
-        })
-    }) )
-    name.focus()
-
 }
 
 func getWidgetTitle as string:
