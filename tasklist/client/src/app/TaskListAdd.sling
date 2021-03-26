@@ -41,6 +41,7 @@ ui LayerWidget
                             })
                         }
                     }
+                    
                     AlignWidget{
                         margin = 1.0
                     
