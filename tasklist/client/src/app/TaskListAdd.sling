@@ -18,6 +18,12 @@ ui LayerWidget
             color = Color.white()
             HorizontalBoxWidget{
                 VerticalBoxWidget form{
+                    AlignWidget{
+                        margin = 1.0
+                        LabelWidget submitMessage{
+                            text = "test"
+                        }
+                    }
                     TextInputWidget idInput{
                         placeholder = "ID"
                     }
@@ -50,19 +56,20 @@ ui LayerWidget
                             task.setDescription(descInput.getWidgetText())
                             APIClient.getInstance().addTask(task.toDynamicMap(), func(res as DynamicMap){
                                 submitMessage.setWidgetText("Successfully Added Task")
+                                var task = nameInput.getWidgetText() .. " - " .. descInput.getWidgetText()
+                                var lblTask = LabelWidget.forText(context, task)
+                                var hbox = HorizontalBoxWidget.forContext(context, 0, context.getHeightValue("0.5mm"))
+                                hbox.addWidget(lblTask)
+                                list.addWidget(AlignWidget.forWidget(context, hbox), 1.0)
+                                idInput.setWidgetText("")
+                                nameInput.setWidgetText("")
+                                descInput.setWidgetText("")
                             }, func(err as Error){
                                 submitMessage.setWidgetText("Failed to save task")
                             })
                         }
                     }
                     
-                    AlignWidget{
-                        margin = 1.0
-                    
-                        LabelWidget submitMessage{
-                            text = "test"
-                        }
-                    }
                 }
                 VerticalBoxWidget list{
                     margin = context.getHeightValue("5mm")
@@ -71,6 +78,27 @@ ui LayerWidget
             }
         }
     }
+}
+
+func initializeWidget override
+{
+    base.initializeWidget()
+    APIClient.getInstance().getTasks(func(response as DynamicMap){
+        var data = assert response.getDynamicMap("data")
+        var records = data.getDynamicVector("records")
+        if not records || records.getSize() < 1{
+            list.addWidget(AlignWidget.forWidget(context, LabelWidget.forText(context, "No Record")), 1.0)
+        }
+        else {
+            foreach record as DynamicMap in records.toVector() {
+                var task = record.getString("name") .. " - " .. record.getString("description")
+                var lblTask = LabelWidget.forText(context, task)
+                var hbox = HorizontalBoxWidget.forContext(context, 0, context.getHeightValue("0.5mm"))
+                hbox.addWidget(lblTask)
+                list.addWidget(AlignWidget.forWidget(context, hbox), 1.0)
+            }
+        }
+    })
 }
 
 func getWidgetTitle as string:
